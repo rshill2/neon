@@ -11,6 +11,7 @@ app.use(express.json());
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 app.post('/query', async (req, res) => {
+  console.log('[REQUEST]', req.body); 
   const apiKey = req.headers['x-api-key'];
   if (apiKey !== process.env.API_KEY) {
     return res.status(403).json({ error: 'Invalid API key' });
