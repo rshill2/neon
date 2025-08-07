@@ -107,10 +107,25 @@ app.post('/query', async (req, res) => {
     return res.status(403).json({ error: 'Unauthorized' });
   }
 
-  const { sql } = req.body;
+  const { sql, confirmDelete } = req.body;
 
-  if (!sql?.trim().toLowerCase().startsWith('select')) {
-    return res.status(400).json({ error: 'Only SELECT queries are allowed' });
+  const sqlType = sql?.trim().split(' ')[0]?.toLowerCase();
+  const allowedKeywords = ['select', 'insert', 'update', 'delete', 'create'];
+
+  if (!allowedKeywords.includes(sqlType)) {
+    return res.status(400).json({ error: 'Query type not allowed' });
+  }
+
+  // 🚨 Add explicit delete protection
+  if (sqlType === 'delete' && !confirmDelete) {
+    return res.status(400).json({
+      error: 'DELETE query blocked. You must set "confirmDelete": true in the request body to run DELETE queries.',
+    });
+  }
+
+  // Optional: log dangerous queries
+  if (sqlType !== 'select') {
+    console.log(`⚠️ GPT is running ${sqlType.toUpperCase()} query:\n${sql}`);
   }
 
   try {
