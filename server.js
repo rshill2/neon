@@ -9,19 +9,18 @@ app.use(cors());
 app.use(express.json());
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
 app.post('/remember', async (req, res) => {
   const apiKey = req.headers['x-api-key'];
   if (apiKey !== process.env.API_KEY) {
     return res.status(403).json({ error: 'Unauthorized' });
   }
 
-  const { type, content } = req.body;
+  const { type, content, date } = req.body;
 
   try {
     const result = await pool.query(
-      'INSERT INTO memory (type, content, timestamp) VALUES ($1, $2, NOW()) RETURNING *',
-      [type, content]
+      'INSERT INTO memory (type, content, date, timestamp) VALUES ($1, $2, $3, NOW()) RETURNING *',
+      [type, content, date]
     );
     res.json(result.rows[0]);
   } catch (err) {
